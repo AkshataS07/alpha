@@ -1,0 +1,32 @@
+# Implement Quantum Teleportation algorithm in Python
+!pip install qiskit qiskit-aer
+
+
+from qiskit import QuantumCircuit, transpile
+from qiskit.visualization import plot_histogram
+from qiskit_aer import Aer
+
+# Create circuit with 3 qubits and 3 classical bits
+qc = QuantumCircuit(3, 3)
+
+# Initialize qubit 0 to |1⟩, create entanglement, and perform Bell measurement
+qc.initialize([0, 1], 0)
+qc.h(1); qc.cx(1, 2); qc.cx(0, 1); qc.h(0)
+qc.measure([0, 1], [0, 1])
+
+# Conditional operations based on measurements
+qc.cx(1, 2); qc.cz(0, 2)
+qc.measure(2, 2)
+
+# Draw circuit and simulate
+print("Quantum Teleportation Circuit:")
+print(qc.draw(output='text'))
+
+simulator = Aer.get_backend('qasm_simulator')
+result = simulator.run(transpile(qc, simulator), shots=1024).result()
+counts = result.get_counts(qc)
+
+print("\nTeleported state:")
+print(counts)
+
+plot_histogram(counts)

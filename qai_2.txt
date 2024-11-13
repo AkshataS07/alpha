@@ -1,0 +1,49 @@
+#2. Tackle Noise with Error Correction
+import random
+
+def hamming_encode(data_bits):
+    m, r, j = len(data_bits), 0, 0
+    while (1 << r) < m + r + 1:
+        r += 1
+    n = m + r
+    encoded_bits = [0 if (i & (i - 1)) == 0 else int(data_bits[j]) for i in range(1, n + 1)]
+
+    for i in range(r):
+        pos, parity = (1 << i) - 1, 0
+        for j in range(pos, n, 2 * (pos + 1)):
+            parity ^= sum(encoded_bits[j:j + pos + 1])
+        encoded_bits[pos] = parity
+    return encoded_bits
+
+def introduce_error(encoded_bits):
+    pos = random.randint(0, len(encoded_bits) - 1)
+    encoded_bits[pos] ^= 1
+    return pos + 1
+
+def hamming_decode(encoded_bits):
+    n, error_pos = len(encoded_bits), 0
+    for i in range(int.bit_length(n)):
+        pos, parity = (1 << i) - 1, 0
+        for j in range(pos, n, 2 * (pos + 1)):
+            parity ^= sum(encoded_bits[j:j + pos + 1])
+        if parity:
+            error_pos += pos + 1
+
+    if error_pos:
+        print(f"Error detected at position {error_pos}. Correcting it.")
+        encoded_bits[error_pos - 1] ^= 1
+    else:
+        print("No error detected.")
+    return [encoded_bits[i - 1] for i in range(1, n + 1) if (i & (i - 1)) != 0]
+
+# Example usage
+data_bits = "1011"
+print("Original data bits:", data_bits)
+encoded_bits = hamming_encode(data_bits)
+print("Encoded bits with parity:", encoded_bits)
+
+error_pos = introduce_error(encoded_bits)
+print(f"Encoded bits after introducing error at position {error_pos}:", encoded_bits)
+
+decoded_data = hamming_decode(encoded_bits)
+print("Decoded data bits after error correction:", "".join(map(str, decoded_data)))

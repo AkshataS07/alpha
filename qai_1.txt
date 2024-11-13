@@ -1,0 +1,43 @@
+#Implementations of 16 Qubit Random Number Generator
+!pip install qiskit qiskit-aer pylatexenc matplotlib
+from qiskit import QuantumCircuit, transpile
+from qiskit_aer import Aer
+from qiskit.visualization import plot_histogram
+
+# Initialize a quantum circuit with 16 qubits
+qc = QuantumCircuit(16, 16)
+
+# Apply Hadamard gate to all qubits to create superposition
+for i in range(16):
+    qc.h(i)
+
+# Measure all qubits
+qc.barrier()
+for i in range(16):
+    qc.measure(i, i)
+
+# Display the quantum circuit
+display(qc.draw('mpl'))
+
+# Use the Aer simulator
+simulator = Aer.get_backend('qasm_simulator')
+
+# Transpile the circuit for the backend
+transpiled_circuit = transpile(qc, simulator)
+
+# Execute the transpiled circuit on the simulator
+job = simulator.run(transpiled_circuit, shots=1)
+
+# Get the results
+result = job.result()
+counts = result.get_counts()
+
+# Display the measurement result
+print("Measurement result (binary):", list(counts.keys())[0])
+
+# Convert the binary result to decimal
+random_number = int(list(counts.keys())[0], 2)
+print("Generated random number (decimal):", random_number)
+
+
+

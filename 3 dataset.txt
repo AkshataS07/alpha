@@ -1,0 +1,56 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+import nltk
+from nltk.corpus import stopwords
+import string
+import re
+nltk.download('stopwords')
+
+
+data = pd.read_csv('https://github.com/YBI-Foundation/Dataset/raw/main/HRDataset.csv') #data = pd.read_csv('combined_data.csv')
+def preprocess_text(text):
+# Convert text to lowercase
+    text = text.lower()
+# Remove punctuation
+    text = text.translate(str.maketrans('', '', string.punctuation))
+# Remove stopwords
+    stop_words = set(stopwords.words('english'))
+    text = ' '.join([word for word in text.split() if word not in stop_words])
+# Remove numbers
+    text = re.sub(r'\d+', '', text)
+    return text
+# Apply preprocessing to the text column
+data['text'] = data['text'].apply(preprocess_text)
+# Split dataset into features (X) and labels (y)
+X = data['text']
+y = data['label']
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y,
+test_size=0.2, random_state=42)
+# Vectorization using TF-IDF
+tfidf_vectorizer = TfidfVectorizer(max_features=5000) 
+
+X_train_tfidf = tfidf_vectorizer.fit_transform(X_train)
+X_test_tfidf = tfidf_vectorizer.transform(X_test)
+# Naive Bayes Classifier
+model = MultinomialNB()
+model.fit(X_train_tfidf, y_train)
+MultinomialNB()
+# Predictions
+y_pred = model.predict(X_test_tfidf)
+# Evaluation Metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+conf_matrix = confusion_matrix(y_test, y_pred)
+# Print the results
+print(f'Accuracy: {accuracy:.4f}')
+print(f'Precision: {precision:.4f}')
+print(f'Recall: {recall:.4f}')
+print(f'F1 Score: {f1:.4f}')
+print('Confusion Matrix:')
+print(conf_matrix)

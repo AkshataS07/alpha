@@ -1,0 +1,25 @@
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer
+
+nltk.download('punkt')
+nltk.download('stopwords')
+
+def preprocess_text(text):
+    stemmer = PorterStemmer()
+    stop_words = set(stopwords.words('english'))
+    words = word_tokenize(text, language='english')
+    preprocessed_words = [stemmer.stem(word) for word in words if word.lower() not in stop_words and word.isalpha()]
+    return ' '.join(preprocessed_words)
+
+sample_text = """
+Information retrieval is the activity of obtaining information system resources
+that are relevant to an information need from a collection of those resources.
+Searches can be based on full-text or other content-based indexing. Web mining
+is a part of data mining techniques used to extract information from web documents.
+"""
+
+processed_text = preprocess_text(sample_text)
+print("Original Text:\n", sample_text)
+print("\nPreprocessed Text:\n", processed_text)

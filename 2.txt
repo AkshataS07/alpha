@@ -1,0 +1,54 @@
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
+
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer
+from collections import defaultdict
+
+def preprocess_text(text):
+    stemmer = PorterStemmer()
+    stop_words = set(stopwords.words('english'))
+    words = word_tokenize(text, language='english')
+    return [stemmer.stem(word) for word in words if word.lower() not in stop_words and word.isalpha()]
+
+def build_inverted_index(documents):
+    inverted_index = defaultdict(list)
+    for doc_id, doc in enumerate(documents):
+        processed_words = preprocess_text(doc)
+        for word in processed_words:
+            if doc_id not in inverted_index[word]:
+                inverted_index[word].append(doc_id)
+    return inverted_index
+
+def retrieve_documents(query, inverted_index):
+    processed_query = preprocess_text(query)
+    relevant_docs = []
+    for word in processed_query:
+        if word in inverted_index:
+            relevant_docs.append(set(inverted_index[word]))
+        else:
+            return []
+    result_docs = set.intersection(*relevant_docs) if relevant_docs else set()
+    return list(result_docs)
+
+def main():
+    documents = [
+        "Information retrieval is the process of retrieving relevant information.",
+        "Web mining is used to extract useful information from web documents.",
+        "The goal of data mining is to discover patterns in large datasets.",
+        "Retrieving web documents efficiently is a major focus in search engines.",
+        "Information retrieval systems are essential for search engines and data mining."
+    ]
+    inverted_index = build_inverted_index(documents)
+    query = "retrieving information"
+    result_docs = retrieve_documents(query, inverted_index)
+    
+    print(f"Query: '{query}'\n")
+    print("Documents retrieved:")
+    for doc_id in result_docs:
+        print(f"Document {doc_id}: {documents[doc_id]}")
+
+if __name__ == "__main__":
+    main()
